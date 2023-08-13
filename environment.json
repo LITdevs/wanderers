@@ -1,4 +1,4 @@
 {
-	"environment": "prod",
-	"name": "API (real edition)"
+	"environment": "dev",
+	"name": "Phoenix Cloud"
 }
