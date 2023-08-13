@@ -79,8 +79,8 @@ unleash.on('synchronized', () => {
 
 const startServer = () => {
     if (!databaseReady || !unleashReady) return;
-    app.listen(process.env.PORT || 13717, async () => {
-        console.log(`${await database.Test.countDocuments({})} test documents in database`)
-        console.log("Listening on port 13717");
+    app.listen(process.env.PORT || 45303, async () => {
+        console.log(`${await database.File.countDocuments({})} files in database`)
+        console.log("Listening on port 45303");
     });
 }
