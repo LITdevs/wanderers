@@ -2,7 +2,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 import mongoose from 'mongoose';
 import EventEmitter from "events";
-import fileSchema from "./schemas/fileSchema.js";
+import oldFileSchema from "./schemas/oldFileSchema.js";
 
 
 export default class Database {
@@ -13,7 +13,11 @@ export default class Database {
     db: any;
     events: EventEmitter = new EventEmitter();
 
-    File;
+    OldFile;
+    FileBucket;
+
+    mongoose;
+
 
     constructor() {
         if (typeof Database._instance === "object") return Database._instance;
@@ -27,6 +31,7 @@ export default class Database {
         }
 
         this.db = mongoose.createConnection(DB_URI);
+        this.mongoose = mongoose;
 
         this.db.once("open", () => {
             this.#onOpen();
@@ -35,8 +40,12 @@ export default class Database {
     }
 
     #onOpen() {
+        this.FileBucket = new this.mongoose.mongo.GridFSBucket(this.db, {
+            bucketName: "fileBucket",
+
+        })
         console.log("Database connection established");
-        this.File = this.db.model('file', fileSchema);
+        this.OldFile = this.db.model('old_file', oldFileSchema);
         this.events.emit("ready");
     }
 }

@@ -56,7 +56,9 @@ app.locals.ejson = ejson;
 
 // Set up routes
 import v1_home from "./routes/v1/home.js";
+import v1_file from "./routes/v1/file.js";
 app.use("/v1", v1_home);
+app.use("/v1/file", v1_file);
 
 // Catch all other requests with 404
 app.all("*", async (req, res) => {
@@ -80,7 +82,7 @@ unleash.on('synchronized', () => {
 const startServer = () => {
     if (!databaseReady || !unleashReady) return;
     app.listen(process.env.PORT || 45303, async () => {
-        console.log(`${await database.File.countDocuments({})} files in database`)
+        console.log(`${await database.OldFile.countDocuments({})} files in database`)
         console.log("Listening on port 45303");
     });
 }

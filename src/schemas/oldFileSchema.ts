@@ -6,7 +6,9 @@ const schema = new mongoose.Schema({
     uploadedAt: Date,
     mime: String,
     private: Boolean,
-    fileName: String
+    fileName: String,
+    shortId: String,
+    persistent: Boolean
 });
 
 export default schema
