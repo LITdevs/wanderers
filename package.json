@@ -1,10 +1,10 @@
 {
 	"type": "module",
-	"name": "api-template",
+	"name": "wanderers-cloud",
 	"version": "1.0.0",
-	"description": "Express backend template",
+	"description": "It's the cloud!",
 	"exports": "./src/index.ts",
-	"repository": "https://github.com/LITdevs/api-template",
+	"repository": "https://github.com/LITdevs/wanderers",
 	"author": "Emilia",
 	"scripts": {
 		"dev": "concurrently \"npx tsc --watch\" \"nodemon -q dist/index.js\""
