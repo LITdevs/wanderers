@@ -59,6 +59,7 @@ import v1_home from "./routes/v1/home.js";
 import v1_file from "./routes/v1/file.js";
 app.use("/v1", v1_home);
 app.use("/v1/file", v1_file);
+app.use("/file", v1_file); // Backwards compatibility
 
 // Catch all other requests with 404
 app.all("*", async (req, res) => {
