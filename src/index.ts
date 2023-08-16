@@ -57,6 +57,9 @@ app.locals.ejson = ejson;
 // Set up routes
 import v1_home from "./routes/v1/home.js";
 import v1_file from "./routes/v1/file.js";
+import RefreshToken from "./classes/Token/RefreshToken.js";
+import AccessToken from "./classes/Token/AccessToken.js";
+import debugShell from "./util/debugShell.js";
 app.use("/v1", v1_home);
 app.use("/v1/file", v1_file);
 app.use("/file", v1_file); // Backwards compatibility
@@ -85,5 +88,8 @@ const startServer = () => {
     app.listen(process.env.PORT || 45303, async () => {
         console.log(`${await database.OldFile.countDocuments({})} files in database`)
         console.log("Listening on port 45303");
+        // Debug console lol
+        process.stdout.write(`\x1b[92mwanderers${ejson.env === "prod" ? "" : "phoenix"}$\x1b[0m `);
+        process.stdin.on("data", debugShell)
     });
 }

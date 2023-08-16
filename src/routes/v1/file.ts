@@ -12,6 +12,7 @@ import fs from "fs";
 import * as crypto from "crypto";
 import {isArray} from "util";
 import BadRequestReply from "../../classes/Reply/BadRequestReply.js";
+import Auth from "../../middleware/Auth.js";
 const router = express.Router();
 
 const database = new Database();
@@ -64,7 +65,7 @@ const uploadEndpoint = async (req, res) => {
         let uploadStream = database.FileBucket.openUploadStream(file.originalname, {
             metadata: {
                 shortId,
-                uploadedBy: new Types.ObjectId(0),
+                uploadedBy: res.locals.dToken.user,
                 private: false,
                 persistent: false
             }
@@ -85,8 +86,8 @@ const uploadEndpoint = async (req, res) => {
 }
 
 // This really should be a PUT imo but backwards compatibility, so it will be a POST
-router.post("/upload", upload.any(), uploadEndpoint)
-router.put("/", upload.any(), uploadEndpoint)
+router.post("/upload", Auth, upload.any(), uploadEndpoint)
+router.put("/", Auth, upload.any(), uploadEndpoint)
 
 
 export default router;
