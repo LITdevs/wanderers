@@ -33,7 +33,10 @@ const database = new Database();
                         shortId: oldFile.shortId || oldFile._id.toString(),
                         uploadedBy: new Types.ObjectId(oldFile.uploadedBy),
                         private: oldFile.private,
-                        persistent: oldFile.persistent
+                        persistent: oldFile.persistent,
+                        tags: [
+                            "legacyUpload"
+                        ]
                     }
                 });
                 readableFileStream.pipe(uploadStream);

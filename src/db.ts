@@ -4,6 +4,7 @@ import mongoose from 'mongoose';
 import EventEmitter from "events";
 import oldFileSchema from "./schemas/oldFileSchema.js";
 import tokenSchema from "./schemas/tokenSchema.js";
+import permanentTokenSchema from "./schemas/permanentTokenSchema.js";
 
 
 export default class Database {
@@ -17,6 +18,7 @@ export default class Database {
     OldFile;
     FileBucket;
 
+    PermanentToken;
     Token;
 
     mongoose;
@@ -50,6 +52,7 @@ export default class Database {
         console.log("Database connection established");
         this.OldFile = this.db.model('old_file', oldFileSchema);
         this.Token = this.db.model('token', tokenSchema);
+        this.PermanentToken = this.db.model('permanent_token', permanentTokenSchema);
         this.events.emit("ready");
     }
 }
