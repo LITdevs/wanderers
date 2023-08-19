@@ -55,6 +55,7 @@ const uploadEndpoint = (isOld = false) => {
     return async (req, res) => {
         // TODO: Aliases
         if (!req.files || !Array.isArray(req.files) || req.files.length < 1) return res.reply(new BadRequestReply("Upload at least one file in multipart/form-data request"))
+        if (req.files.length > 10) return res.reply(new BadRequestReply("Upload a maximum of 10 files at a time."))
         /**
          * Upload files to GridFS
          */
