@@ -8,7 +8,7 @@ import multer from "multer";
 import fs from "fs";
 import * as crypto from "crypto";
 import BadRequestReply from "../../classes/Reply/BadRequestReply.js";
-import {AuthPermitPermanent} from "../../middleware/Auth.js";
+import Auth, {AuthPermitPermanent} from "../../middleware/Auth.js";
 const router = express.Router();
 
 const database = new Database();
@@ -108,5 +108,22 @@ router.get("/file/:fileId", getEndpoint);
 // New endpoints
 router.put("/v1/file", AuthPermitPermanent, upload.any(), uploadEndpoint());
 router.get("/v1/file/:fileId", getEndpoint);
+
+router.get("/v1/file", Auth, async (req, res) => {
+    let cursor = database.FileBucket.find({"metadata.uploadedBy": res.locals.dToken.user})
+
+    // I am sure there is a better way to do this, however I am not used to the native driver.
+    let files : any[] = []
+    for await (const file of cursor) {
+        files.push(file);
+    }
+
+    return res.reply(new Reply({
+        response: {
+            message: "Files listed",
+            files
+        }
+    }))
+})
 
 export default router;
