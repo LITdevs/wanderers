@@ -9,7 +9,7 @@ import {ejson} from "../index.js";
 import Database from "../db.js";
 import AccessToken from "../classes/Token/AccessToken.js";
 import RefreshToken from "../classes/Token/RefreshToken.js";
-
+import crypto from "crypto";
 const database = new Database();
 
 export default async function (data : Buffer) {
@@ -39,9 +39,25 @@ export default async function (data : Buffer) {
                 // type in `eval (async () => {console.log(await (database.Token.find()))})()` for funnies
                 eval(args.join(" "))
                 break;*/
+            case "ptoken":
+                if (args.length !== 2) {
+                    console.log("Usage: ptoken [userId] [persistAll y/n]");
+                    break;
+                }
+                let token = new database.PermanentToken({
+                    persistAll: args[1] === "y",
+                    user: args[0],
+                    token: crypto.randomBytes(16).toString("base64url"),
+                    defaultTags: [
+                        "debugUpload"
+                    ]
+                })
+                await token.save();
+                console.log(token)
+                break;
             default:
                 if (command.length < 1) break;
-                console.log(`\x1b[31mCommand ${data.toString().trimEnd()} not found.\x1b[0m`);
+                console.log(`\x1b[31mCommand ${command.toString().trimEnd()} not found.\x1b[0m`);
                 break;
         }
     } catch (e) {

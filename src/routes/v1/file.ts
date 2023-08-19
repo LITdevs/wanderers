@@ -1,18 +1,14 @@
 import express from 'express';
-import RequiredProperties from "../../middleware/RequiredProperties.js";
 import Reply from "../../classes/Reply/Reply.js";
-import ServerErrorReply from "../../classes/Reply/ServerErrorReply.js";
 import Database from "../../db.js";
-import {isValidObjectId, Types} from "mongoose";
 import NotFoundReply from "../../classes/Reply/NotFoundReply.js";
 import {fileTypeStream} from "file-type";
 import {contentType} from "mime-types";
 import multer from "multer";
 import fs from "fs";
 import * as crypto from "crypto";
-import {isArray} from "util";
 import BadRequestReply from "../../classes/Reply/BadRequestReply.js";
-import Auth from "../../middleware/Auth.js";
+import {AuthPermitPermanent} from "../../middleware/Auth.js";
 const router = express.Router();
 
 const database = new Database();
@@ -24,7 +20,7 @@ const tmpStorage = multer.diskStorage({
 })
 const upload = multer({storage: tmpStorage})
 
-router.get("/:fileId", async (req, res) => {
+const getEndpoint = async (req, res) => {
     const download = !!req.query?.download
     req.params.fileId = req.params.fileId.split(".")[0];
     // Read file metadata from file bucket with official driver
@@ -52,42 +48,65 @@ router.get("/:fileId", async (req, res) => {
 
     //console.log(typeIdStream.length)
     fileStream.pipe(res);
-})
-
-
-const uploadEndpoint = async (req, res) => {
-    // TODO: Auth
-    // TODO: Private and persistent files (depends on auth)
-    if (!req.files || !Array.isArray(req.files) || req.files.length < 1) return res.reply(new BadRequestReply("Upload at least one file in multipart/form-data request"))
-    let uploadPromises : Promise<string>[] = req.files.map(file => new Promise(resolve => {
-        let readStream = fs.createReadStream(file.path);
-        let shortId = crypto.randomBytes(4).toString("base64url"); // (2^8)^4 = 4294967296
-        let uploadStream = database.FileBucket.openUploadStream(file.originalname, {
-            metadata: {
-                shortId,
-                uploadedBy: res.locals.dToken.user,
-                private: false,
-                persistent: false
-            }
-        });
-        readStream.pipe(uploadStream);
-        uploadStream.on('finish', () => {
-            resolve(shortId);
-        });
-    }))
-
-    let uploads : string[] = await Promise.all(uploadPromises);
-    res.reply(new Reply({
-        response: {
-            message: "Upload complete",
-            uploadedFiles: uploads.map(u => `http://localhost:45303/v1/file/${u}`)
-        }
-    }))
 }
 
-// This really should be a PUT imo but backwards compatibility, so it will be a POST
-router.post("/upload", Auth, upload.any(), uploadEndpoint)
-router.put("/", Auth, upload.any(), uploadEndpoint)
 
+const uploadEndpoint = (isOld = false) => {
+    return async (req, res) => {
+        // TODO: Aliases
+        if (!req.files || !Array.isArray(req.files) || req.files.length < 1) return res.reply(new BadRequestReply("Upload at least one file in multipart/form-data request"))
+        /**
+         * Upload files to GridFS
+         */
+        let uploadPromises : Promise<string>[] = req.files.map(file => new Promise(resolve => {
+            let readStream = fs.createReadStream(file.path);
+            let shortId = crypto.randomBytes(4).toString("base64url"); // (2^8)^4 = 4294967296
+            let uploadStream = database.FileBucket.openUploadStream(file.originalname, {
+                metadata: {
+                    shortId, // Randomly generated ID to use for URL, because ObjectID is very long
+                    uploadedBy: res.locals.dToken.user, // Reference back to user ID
+                    private: !!req.headers["w-private"], // If w-private header is present make files private
+                    persistent: !!res.locals.dToken?.persistAll, // Used by system accounts like Lightquark to prevent automatic deletion of files
+                    tags: [...(res.locals.dToken?.defaultTags || []), ...(req.headers?.["w-tags"]?.split(";")?.filter(t => t.trim().length > 0) || [ "api upload" ])]
+                    // First default tags from token, then headers (default "api upload")
+                }
+            });
+            readStream.pipe(uploadStream);
+            uploadStream.on('finish', () => {
+                resolve(shortId);
+            });
+        }))
+
+        /**
+         * Response
+         */
+        let urlBase = "http://localhost:45303/v1/file/"
+        let uploads : string[] = await Promise.all(uploadPromises);
+
+        // Old endpoint needs to return in a stupid format
+        if (!isOld) {
+            res.reply(new Reply({
+                response: {
+                    message: "Upload complete",
+                    uploadedFiles: uploads.map(u => `${urlBase}${u}`)
+                }
+            }))
+        } else {
+            if (uploads.length === 1) {
+                return res.send(`${urlBase}${uploads[0]}`)
+            } else {
+                return res.send(uploads.map(u => `${urlBase}${u}`))
+            }
+        }
+    }
+
+}
+// Backwards compatibility endpoints
+router.post("/upload", AuthPermitPermanent, upload.any(), uploadEndpoint(true));
+router.get("/file/:fileId", getEndpoint);
+
+// New endpoints
+router.put("/v1/file", AuthPermitPermanent, upload.any(), uploadEndpoint());
+router.get("/v1/file/:fileId", getEndpoint);
 
 export default router;

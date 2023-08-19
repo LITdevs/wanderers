@@ -36,3 +36,21 @@ export default async function Auth(req, res, next) {
         return res.reply(new ServerErrorReply(e))
     }
 }
+
+export async function AuthPermitPermanent(req, res, next) {
+    try {
+        if (req.headers.authentication) {
+            // Permanent token authentication
+            let token = await database.PermanentToken.findOne({token: req.headers.authentication});
+            if (!token) return res.reply(new UnauthorizedReply("Invalid permanent token"));
+            res.locals.dToken = token;
+            next();
+        } else {
+            // Otherwise use the existing middleware
+            await Auth(req, res, next);
+        }
+    } catch (e : any) {
+        console.error(e);
+        return res.reply(new ServerErrorReply(e))
+    }
+}

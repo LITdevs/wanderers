@@ -5,6 +5,7 @@ import fs from "fs";
 import NotFoundReply from "./classes/Reply/NotFoundReply.js";
 import Database from "./db.js";
 import { initialize } from 'unleash-client';
+import debugShell from "./util/debugShell.js";
 
 const pjson = JSON.parse(fs.readFileSync("package.json").toString());
 const ejson = JSON.parse(fs.readFileSync("environment.json").toString());
@@ -57,12 +58,13 @@ app.locals.ejson = ejson;
 // Set up routes
 import v1_home from "./routes/v1/home.js";
 import v1_file from "./routes/v1/file.js";
-import RefreshToken from "./classes/Token/RefreshToken.js";
-import AccessToken from "./classes/Token/AccessToken.js";
-import debugShell from "./util/debugShell.js";
+
+/*app.use("/", (req, res, next) => {
+    console.log(req.originalUrl);
+    next()
+})*/
+app.use("/", v1_file);
 app.use("/v1", v1_home);
-app.use("/v1/file", v1_file);
-app.use("/file", v1_file); // Backwards compatibility
 
 // Catch all other requests with 404
 app.all("*", async (req, res) => {

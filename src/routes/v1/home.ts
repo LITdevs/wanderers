@@ -35,7 +35,7 @@ const database = new Database();
                         private: oldFile.private,
                         persistent: oldFile.persistent,
                         tags: [
-                            "legacyUpload"
+                            "legacy upload"
                         ]
                     }
                 });
