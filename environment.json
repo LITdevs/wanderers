@@ -1,4 +1,4 @@
 {
-	"environment": "dev",
-	"name": "Phoenix Cloud"
+	"environment": "prod",
+	"name": "Wanderer's Cloud"
 }
