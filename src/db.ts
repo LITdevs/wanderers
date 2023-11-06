@@ -35,7 +35,9 @@ export default class Database {
             process.exit(2);
         }
 
-        this.db = mongoose.createConnection(DB_URI);
+        this.db = mongoose.createConnection(DB_URI, {
+            maxPoolSize: 50
+        });
         this.mongoose = mongoose;
 
         this.db.once("open", () => {

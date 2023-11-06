@@ -4,7 +4,7 @@
 	"version": "1.0.0",
 	"description": "It's the cloud!",
 	"exports": "./src/index.ts",
-	"repository": "https://github.com/LITdevs/wanderers",
+	"repository": "https://github.com/jumpsca-re/wanderers-api.git",
 	"author": "Emilia",
 	"scripts": {
 		"dev": "concurrently \"npx tsc --watch\" \"nodemon -q dist/index.js\""
