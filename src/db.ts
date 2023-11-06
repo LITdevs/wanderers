@@ -2,7 +2,9 @@ import dotenv from 'dotenv';
 dotenv.config();
 import mongoose from 'mongoose';
 import EventEmitter from "events";
-import testSchema from "./schemas/testSchema.js";
+import oldFileSchema from "./schemas/oldFileSchema.js";
+import tokenSchema from "./schemas/tokenSchema.js";
+import permanentTokenSchema from "./schemas/permanentTokenSchema.js";
 
 
 export default class Database {
@@ -13,7 +15,14 @@ export default class Database {
     db: any;
     events: EventEmitter = new EventEmitter();
 
-    Test;
+    OldFile;
+    FileBucket;
+
+    PermanentToken;
+    Token;
+
+    mongoose;
+
 
     constructor() {
         if (typeof Database._instance === "object") return Database._instance;
@@ -26,7 +35,10 @@ export default class Database {
             process.exit(2);
         }
 
-        this.db = mongoose.createConnection(DB_URI);
+        this.db = mongoose.createConnection(DB_URI, {
+            maxPoolSize: 50
+        });
+        this.mongoose = mongoose;
 
         this.db.once("open", () => {
             this.#onOpen();
@@ -35,8 +47,14 @@ export default class Database {
     }
 
     #onOpen() {
+        this.FileBucket = new this.mongoose.mongo.GridFSBucket(this.db, {
+            bucketName: "fileBucket",
+
+        })
         console.log("Database connection established");
-        this.Test = this.db.model('test', testSchema);
+        this.OldFile = this.db.model('old_file', oldFileSchema);
+        this.Token = this.db.model('token', tokenSchema);
+        this.PermanentToken = this.db.model('permanent_token', permanentTokenSchema);
         this.events.emit("ready");
     }
 }
