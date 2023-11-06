@@ -7,7 +7,8 @@
 	"repository": "https://github.com/jumpsca-re/wanderers-api.git",
 	"author": "Emilia",
 	"scripts": {
-		"dev": "concurrently \"npx tsc --watch\" \"nodemon -q dist/index.js\""
+		"dev": "concurrently \"npx tsc --watch\" \"nodemon -q dist/index.js\"",
+		"start": "npx tsc; node dist/index.js"
 	},
 	"dependencies": {
 		"axios": "^1.4.0",
