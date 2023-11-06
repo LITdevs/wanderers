@@ -88,7 +88,6 @@ unleash.on('synchronized', () => {
 const startServer = () => {
     if (!databaseReady || !unleashReady) return;
     app.listen(process.env.PORT || 45303, async () => {
-        console.log(`${await database.OldFile.countDocuments({})} files in database`)
         console.log("Listening on port 45303");
         // Debug console lol
         process.stdout.write(`\x1b[92mwanderers${ejson.env === "prod" ? "" : "phoenix"}$\x1b[0m `);

@@ -10,6 +10,7 @@ import * as crypto from "crypto";
 import BadRequestReply from "../../classes/Reply/BadRequestReply.js";
 import Auth, {AuthPermitPermanent} from "../../middleware/Auth.js";
 import ForbiddenReply from "../../classes/Reply/ForbiddenReply.js";
+import ServerErrorReply from "../../classes/Reply/ServerErrorReply.js";
 const router = express.Router();
 
 const database = new Database();
@@ -90,7 +91,25 @@ const uploadEndpoint = (isOld = false) => {
         /**
          * Response
          */
-        let urlBase = "http://localhost:45303/v1/file/"
+        let aliasesToUse : string[];
+        let protocol = "https://"
+        switch (process.env.WC_ENV) {
+            case "local":
+                aliasesToUse = ["localhost:45303"]
+                // noinspection HttpUrlsUsage <-- reason should be obvious
+                protocol = "http://"
+                break;
+            case "dev":
+                aliasesToUse = ["phoenix.wanderers.cloud"]
+                break;
+            default:
+                aliasesToUse = ["wanderers.cloud"]
+                break;
+        }
+
+        if (req.headers["w-domains"] && req.headers["w-domains"].length > 0) aliasesToUse = req.headers["w-domains"].split(";");
+        let alias : string = aliasesToUse[Math.floor(Math.random() * aliasesToUse.length)]
+        let urlBase : string = `${protocol}${alias}/v1/file/`
         let uploads : string[] = await Promise.all(uploadPromises);
 
         // Old endpoint needs to return in a stupid format
@@ -118,6 +137,27 @@ router.get("/file/:fileId", getEndpoint);
 // New endpoints
 router.put("/v1/file", AuthPermitPermanent, upload.any(), uploadEndpoint());
 router.get("/v1/file/:fileId", getEndpoint);
+
+// Allow permanent tokens for backwards compatibility
+router.delete("/v1/file/:fileId", AuthPermitPermanent, async (req, res) => {
+    try {
+        let fileCursor = database.FileBucket.find({"metadata.shortId": req.params.fileId, "metadata.uploadedBy": res.locals.dToken.user})
+        let file : any;
+        for await (const doc of fileCursor) {
+            file = doc
+        }
+        if (!file) return res.reply(new NotFoundReply());
+
+        await database.FileBucket.delete(file._id)
+        return res.reply(new Reply({response: {
+                message: "File deleted"
+            }
+        }));
+    } catch (e) {
+        console.error(e);
+        res.reply(new ServerErrorReply())
+    }
+})
 
 router.get("/v1/file", Auth, async (req, res) => {
     let cursor = database.FileBucket.find({"metadata.uploadedBy": res.locals.dToken.user})
