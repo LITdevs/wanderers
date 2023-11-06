@@ -9,6 +9,7 @@ import fs from "fs";
 import * as crypto from "crypto";
 import BadRequestReply from "../../classes/Reply/BadRequestReply.js";
 import Auth, {AuthPermitPermanent} from "../../middleware/Auth.js";
+import ForbiddenReply from "../../classes/Reply/ForbiddenReply.js";
 const router = express.Router();
 
 const database = new Database();
@@ -30,24 +31,32 @@ const getEndpoint = async (req, res) => {
         file = doc
     }
     if (!file) return res.reply(new NotFoundReply())
-    // Create a stream from GridFS with official driver and pipe it to response
-    // TODO: Check metadata.private
-    let fileStream = database.FileBucket.openDownloadStreamByName(file.filename)
-    // Get file type from stream, fallback to filename based, and then octet stream
-    fileStream = await fileTypeStream(fileStream);
-    let mimeType = fileStream?.fileType?.mime;
-    if (!mimeType) {
-        // Couldn't detect a mime type, probably a text file not binary
-        // Check with mime-types
-        mimeType = contentType(file.filename)
-    }
-    // If mime type still was not detected fall back to octet stream
-    res.header("Content-Type", mimeType || "application/octet-stream")
-    // If download query is set return as attachment, by default show inline
-    res.header("Content-Disposition", `${download ? "attachment" : "inline"}; filename="${file.filename}"`)
 
-    //console.log(typeIdStream.length)
-    fileStream.pipe(res);
+    const returnFile = async () => {
+        // Create a stream from GridFS with official driver and pipe it to response
+        let fileStream = database.FileBucket.openDownloadStreamByName(file.filename)
+        // Get file type from stream, fallback to filename based, and then octet stream
+        fileStream = await fileTypeStream(fileStream);
+        let mimeType = fileStream?.fileType?.mime;
+        if (!mimeType) {
+            // Couldn't detect a mime type, probably a text file not binary
+            // Check with mime-types
+            mimeType = contentType(file.filename)
+        }
+        // If mime type still was not detected fall back to octet stream
+        res.header("Content-Type", mimeType || "application/octet-stream")
+        // If download query is set return as attachment, by default show inline
+        res.header("Content-Disposition", `${download ? "attachment" : "inline"}; filename="${file.filename}"`)
+
+        //console.log(typeIdStream.length)
+        fileStream.pipe(res);
+    }
+
+    if (!file.metadata.private) return returnFile()
+    await AuthPermitPermanent(req, res, () => {
+        if (res.locals.dToken.user.equals(file.metadata.uploadedBy)) return returnFile();
+        res.reply(new ForbiddenReply())
+    })
 }
 
 

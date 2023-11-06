@@ -70,7 +70,6 @@ export default function RequiredProperties(strings: (string|IRequiredProperty)[]
                 }
 
                 // Check regex
-                // TODO: Add custom reason text for regex
                 if (string.regex) {
                     if (!string.regex.test(req.body[string.property])) {
                         propertyViolations.push({property: string.property, reason: `${string.property} must match regex ${string.regex}`});
