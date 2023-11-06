@@ -21,7 +21,7 @@ module.exports = {
             "host" : ["kirito.yggdrasil.cat"],
             "ref"  : "origin/phoenix",
             "repo" : "git@github.com:jumpsca-re/wanderers-api.git",
-            "path" : "/home/jumpscare/phoenix",
+            "path" : "/home/jumpscare/wanderers-phoenix",
             "post-deploy" : "yarn install && pm2 startOrRestart yggdrasil.config.cjs --only wanderers-phoenix --env phoenix"
         },
         production : {
@@ -29,7 +29,7 @@ module.exports = {
             "host" : ["kirito.yggdrasil.cat"],
             "ref"  : "origin/prod",
             "repo" : "git@github.com:jumpsca-re/wanderers-api.git",
-            "path" : "/home/jumpscare/production",
+            "path" : "/home/jumpscare/wanderers-production",
             "post-deploy" : "yarn install && pm2 startOrRestart yggdrasil.config.cjs --only wanderers-production --env production"
         }
     }
