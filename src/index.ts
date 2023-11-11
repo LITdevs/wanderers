@@ -16,6 +16,11 @@ export { pjson, ejson }
 const database = new Database();
 const app = express();
 
+
+app.get("/test", (req, res) => {
+    res.sendStatus(200)
+})
+
 if (!process.env.UNLEASH_TOKEN) {
     console.error("No UNLEASH_TOKEN, exiting.")
     process.exit(5)
@@ -27,6 +32,7 @@ export const unleash = initialize({
     // @ts-ignore
     customHeaders: { Authorization: process.env.UNLEASH_TOKEN },
 });
+
 
 // Set up body parsers
 app.use(express.json())

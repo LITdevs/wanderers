@@ -11,6 +11,7 @@ import BadRequestReply from "../../classes/Reply/BadRequestReply.js";
 import Auth, {AuthPermitPermanent} from "../../middleware/Auth.js";
 import ForbiddenReply from "../../classes/Reply/ForbiddenReply.js";
 import ServerErrorReply from "../../classes/Reply/ServerErrorReply.js";
+import mongoose from "mongoose";
 const router = express.Router();
 
 const database = new Database();
@@ -73,6 +74,7 @@ const uploadEndpoint = (isOld = false) => {
             let readStream = fs.createReadStream(file.path);
             let shortId = crypto.randomBytes(4).toString("base64url"); // (2^8)^4 = 4294967296
             let uploadStream = database.FileBucket.openUploadStream(file.originalname, {
+                _id: new mongoose.Types.ObjectId(),
                 metadata: {
                     shortId, // Randomly generated ID to use for URL, because ObjectID is very long
                     uploadedBy: res.locals.dToken.user, // Reference back to user ID
