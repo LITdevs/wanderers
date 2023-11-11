@@ -86,7 +86,8 @@ const uploadEndpoint = (isOld = false) => {
             });
             readStream.pipe(uploadStream);
             uploadStream.on('finish', () => {
-                resolve(shortId);
+                let fileNameParts = file.originalname.split(".")
+                resolve({id: shortId, extension: fileNameParts[fileNameParts.length - 1]});
             });
         }))
 
@@ -111,22 +112,22 @@ const uploadEndpoint = (isOld = false) => {
 
         if (req.headers["w-domains"] && req.headers["w-domains"].length > 0) aliasesToUse = req.headers["w-domains"].split(";");
         let alias : string = aliasesToUse[Math.floor(Math.random() * aliasesToUse.length)]
-        let urlBase : string = `${protocol}${alias}/v1/file/`
-        let uploads : string[] = await Promise.all(uploadPromises);
+        let urlBase : string = `${protocol}${alias}${isOld ? "" : "/v1/file/"}`
+        let uploads : any[] = await Promise.all(uploadPromises);
 
         // Old endpoint needs to return in a stupid format
         if (!isOld) {
             res.reply(new Reply({
                 response: {
                     message: "Upload complete",
-                    uploadedFiles: uploads.map(u => `${urlBase}${u}`)
+                    uploadedFiles: uploads.map(u => `${urlBase}${u.id}`)
                 }
             }))
         } else {
             if (uploads.length === 1) {
-                return res.send(`${urlBase}${uploads[0]}`)
+                return res.send(`${urlBase}${uploads[0].id}.${uploads[0].extension}`)
             } else {
-                return res.send(uploads.map(u => `${urlBase}${u}`))
+                return res.send(uploads.map(u => `${urlBase}${u.id}.${u.extension}`))
             }
         }
     }
