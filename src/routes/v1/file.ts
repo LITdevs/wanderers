@@ -36,7 +36,7 @@ const getEndpoint = async (req, res) => {
 
     const returnFile = async () => {
         // Create a stream from GridFS with official driver and pipe it to response
-        let fileStream = database.FileBucket.openDownloadStreamByName(file.filename)
+        let fileStream = database.FileBucket.openDownloadStream(file._id)
         // Get file type from stream, fallback to filename based, and then octet stream
         fileStream = await fileTypeStream(fileStream);
         let mimeType = fileStream?.fileType?.mime;
