@@ -112,7 +112,7 @@ const uploadEndpoint = (isOld = false) => {
 
         if (req.headers["w-domains"] && req.headers["w-domains"].length > 0) aliasesToUse = req.headers["w-domains"].split(";");
         let alias : string = aliasesToUse[Math.floor(Math.random() * aliasesToUse.length)]
-        let urlBase : string = `${protocol}${alias}${isOld ? "" : "/v1/file/"}`
+        let urlBase : string = `${protocol}${alias}${isOld ? "/" : "/v1/file/"}`
         let uploads : any[] = await Promise.all(uploadPromises);
 
         // Old endpoint needs to return in a stupid format
