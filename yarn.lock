@@ -1621,16 +1621,6 @@ unique-slug@^3.0.0:
   dependencies:
     imurmurhash "^0.1.4"
 
-unleash-client@^4.1.0:
-  version "4.1.0"
-  resolved "https://registry.yarnpkg.com/unleash-client/-/unleash-client-4.1.0.tgz#2948ac933bf0392bf56eebad8e64628a7a84d20d"
-  integrity sha512-b6IKLTVFqMrADXR0gghe1TW7GUBMJF34NOxIwzkflW48f59Xh3J8r/Nzv43AKFhG2YqI3Ex38kelFwDVFRSIYQ==
-  dependencies:
-    ip "^1.1.8"
-    make-fetch-happen "^10.2.1"
-    murmurhash3js "^3.0.1"
-    semver "^7.5.3"
-
 unpipe@1.0.0, unpipe@~1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/unpipe/-/unpipe-1.0.0.tgz#b2bf4ee8514aae6165b4817829d21b2ef49904ec"
