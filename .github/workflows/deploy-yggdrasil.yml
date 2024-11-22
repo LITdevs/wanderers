@@ -42,11 +42,11 @@ jobs:
           ssh-add ~/.ssh/id_rsa
           ssh-keyscan -H 10.1.3.1 > ~/.ssh/known_hosts
       - run: git reset --hard
-      - run: pm2 deploy yggdrasil.config.cjs phoenix
+      - run: npx pm2 deploy yggdrasil.config.cjs phoenix
         env:
           SSH_AUTH_SOCK: /tmp/ssh_agent.sock
         if: github.ref_name == 'phoenix'
-      - run: pm2 deploy yggdrasil.config.cjs production
+      - run: npx pm2 deploy yggdrasil.config.cjs production
         env:
           SSH_AUTH_SOCK: /tmp/ssh_agent.sock
         if: github.ref_name == 'prod'
